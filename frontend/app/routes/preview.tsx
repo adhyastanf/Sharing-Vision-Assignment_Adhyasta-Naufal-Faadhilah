@@ -7,6 +7,7 @@ import { SearchInput } from '~/components/search-input';
 import { CATEGORY_OPTIONS } from '~/constants/data';
 import { useArticles } from '~/hooks/use-query';
 import type { Article } from '~/types/articles';
+import { ArticlesListSkeleton } from '~/components/loading/loading-preview';
 
 export default function PreviewPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -16,9 +17,7 @@ export default function PreviewPage() {
 
   const offset = (currentPage - 1) * itemsPerPage;
 
-  const { data, isLoading } = useArticles(itemsPerPage, offset);
-
-  if (isLoading) return;
+  const { data, isLoading, error } = useArticles(itemsPerPage, offset);
 
   const totalItems = data?.total_count ?? 0;
 
@@ -30,8 +29,10 @@ export default function PreviewPage() {
       </div>
 
       <ArticlesList
-        articles={data?.posts ?? []} 
-        totalItems={totalItems} 
+        isLoading={isLoading}
+        isError={error}
+        articles={data?.posts ?? []}
+        totalItems={totalItems}
         currentPage={currentPage}
         itemsPerPage={itemsPerPage}
         setCurrentPage={setCurrentPage}
@@ -47,6 +48,8 @@ export default function PreviewPage() {
 
 interface ArticlesListProps {
   articles: Article[];
+  isLoading: boolean;
+  isError: any;
   totalItems: number;
   currentPage: number;
   itemsPerPage: number;
@@ -58,7 +61,14 @@ interface ArticlesListProps {
   setCategoryFilter: (category: string) => void;
 }
 
-function ArticlesList({ articles, totalItems, currentPage, itemsPerPage, setCurrentPage, setItemsPerPage, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter }: ArticlesListProps) {
+function ArticlesList({ articles, isLoading, isError, totalItems, currentPage, itemsPerPage, setCurrentPage, setItemsPerPage, searchTerm, setSearchTerm, categoryFilter, setCategoryFilter }: ArticlesListProps) {
+  if (isLoading) {
+    return <ArticlesListSkeleton />;
+  }
+
+  if (isError) {
+    return <div className='text-center py-12 text-red-500'>Failed to load articles. Please try again.</div>;
+  }
   const publishedArticles = useMemo(
     () =>
       articles.filter(
@@ -70,7 +80,7 @@ function ArticlesList({ articles, totalItems, currentPage, itemsPerPage, setCurr
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  if (!articles || articles.length === 0) {
+  if (articles.length === 0) {
     return (
       <div className='text-center py-12'>
         <BookOpen className='mx-auto h-12 w-12 text-gray-400 mb-4' />
@@ -89,7 +99,6 @@ function ArticlesList({ articles, totalItems, currentPage, itemsPerPage, setCurr
 
         <div className='flex flex-col sm:flex-row gap-4'>
           <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder='Search articles...' className='flex-1' />
-
           <FilterSelect value={categoryFilter} onChange={(value) => setCategoryFilter(value)} options={CATEGORY_OPTIONS} placeholder='Category' allLabel='All Categories' className='w-40' />
         </div>
       </div>

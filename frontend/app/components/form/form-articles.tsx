@@ -51,8 +51,6 @@ export default function FormArticles({ initialData, type }: FormArticlesProps) {
     form.handleSubmit(onSubmit)();
   };
 
-  console.log(form.formState.isSubmitting);
-
   return (
     <Card className='w-full'>
       <CardHeader className='flex items-center'>

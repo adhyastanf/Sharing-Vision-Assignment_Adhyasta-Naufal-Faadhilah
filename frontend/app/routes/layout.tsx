@@ -6,7 +6,7 @@ export default function Layout() {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <main className='min-h-screen bg-gray-50 w-full py-6'>
+      <main className='min-h-screen bg-gray-50 w-full py-6 px-4'>
         <SidebarTrigger />
         <Outlet />
       </main>
